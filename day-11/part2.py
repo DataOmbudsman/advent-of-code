@@ -1,3 +1,6 @@
+least_common_multiple = 1
+
+
 class Item:
     def __init__(self, x):
         self._score = x
@@ -24,39 +27,10 @@ class Monkey:
 
         self.items = [Item(score) for score in starting_items]
         self.test_divisor = test_divisor
-        self._global_divisor = None
         self._inspection_count = 0
-        self._raw_operation = operation
+        self._operation = lambda old: eval(operation)
         self._to_if_false = to_if_false
         self._to_if_true = to_if_true
-        self._operation = None
-
-    def _define_operation(self, operation_raw):
-        operand1, operator, operand2 = operation_raw.split()
-
-        if operand1 == 'old' and operator == '+' and operand2.isnumeric():
-            operation = (
-                f'{operand1} % {self._global_divisor} + {operand2}'
-            )
-        elif operand1 == 'old' and operator == '*':
-            operation = (
-                f'({operand1} % {self._global_divisor}) * '
-                f'({operand2} % {self._global_divisor})'
-            )
-        else:
-            raise ValueError("Unknown case")
-
-        def op(old): return eval(operation)
-
-        return op
-
-    @property
-    def global_divisor(self):
-        return self._global_divisor
-
-    def initialize_monkey(self, global_divisor):
-        self._global_divisor = global_divisor
-        self._operation = self._define_operation(self._raw_operation)
 
     def inspect_and_throw_item_to(self):
         self._inspection_count += 1
@@ -66,8 +40,9 @@ class Monkey:
         return item_to_throw, throw_to
 
     def _who_to_throw_to(self, item):
+        global least_common_multiple
         item.score = self._operation(item.score)
-        # item.score = item.score // 3
+        item.score = item.score % least_common_multiple
 
         if item.score % self.test_divisor == 0:
             return self._to_if_true
@@ -105,18 +80,16 @@ class PlayingMonkeys:
             starting_items, operation, test_divisor, to_if_true, to_if_false)
 
         self.monkeys[monkey_id] = monkey
+        self._adjust_least_common_multiple(test_divisor)
 
     def play(self, n_rounds):
-        self._initialize_game()
         for x in range(n_rounds):
             self._play_round()
 
-    def _initialize_game(self):
-        global_divisor = 1
-        for monkey in self.monkeys.values():
-            global_divisor *= monkey.test_divisor
-        for monkey in self.monkeys.values():
-            monkey.initialize_monkey(global_divisor=global_divisor)
+    @staticmethod
+    def _adjust_least_common_multiple(test_divisor):
+        global least_common_multiple
+        least_common_multiple *= test_divisor
 
     def _play_round(self):
         for throwing_monkey in self.monkeys.values():
