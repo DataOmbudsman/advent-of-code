@@ -38,12 +38,7 @@ class Monkey:
             operation = (
                 f'{operand1} % {self._global_divisor} + {operand2}'
             )
-        elif operand1 == 'old' and operator == '*' and operand2.isnumeric():
-            operation = (
-                f'({operand1} % {self._global_divisor}) * '
-                f'({operand2} % {self._global_divisor})'
-            )
-        elif operand1 == 'old' and operator == '*' and operand2 == 'old':
+        elif operand1 == 'old' and operator == '*':
             operation = (
                 f'({operand1} % {self._global_divisor}) * '
                 f'({operand2} % {self._global_divisor})'
